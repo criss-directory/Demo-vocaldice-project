@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vocaldice — AI Voice Receptionist for Medical Clinics
 
-## Getting Started
+A full-stack SaaS platform giving medical clinics in South India a 24/7 AI receptionist that speaks Telugu, Tamil, Kannada, Malayalam, Hindi, and English.
 
-First, run the development server:
+## Tech Stack
+
+- **Frontend**: Next.js 14 (App Router) + Tailwind CSS
+- **Auth & DB**: Supabase
+- **STT**: Sarvam AI (`saarika:v2`)
+- **TTS**: Cartesia (`sonic-english`)
+- **LLM**: Google Gemini 1.5 Flash
+- **Voice**: WebRTC (browser MediaRecorder API)
+
+---
+
+## Setup
+
+### 1. Install dependencies
+
+```bash
+cd "e:\Vocaldice Product\vocaldice"
+npm install
+```
+
+### 2. Configure environment variables
+
+The `.env.local` file is already pre-configured. If you need to update keys:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://gqmukyyqiohploxmmytf.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_AP8xIfNEcI7d7xGBa09RfA_pCkY5Gg8
+CARTESIA_API_KEY=sk_car_rFLLnkFm6n7h9jLgLbiECH
+SARVAM_API_KEY=sk_y2nbv7dh_RRZoDZ3SOb0Pc7jEXVbRJ11k
+GEMINI_API_KEY=AIzaSyBZxFHhJgTE14Ag_NIpv3mqUblyLZy0MQQ
+```
+
+### 3. Set up Supabase database
+
+Run this SQL in your **Supabase → SQL Editor**:
+
+```sql
+create table if not exists clinics (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  owner_name text, clinic_name text, email text, phone text,
+  created_at timestamptz default now()
+);
+
+create table if not exists agent_config (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade unique,
+  clinic_name text, doctor_names text[], specialties text[],
+  working_hours jsonb, languages text[], agent_voice text,
+  clinic_address text, faqs jsonb, agent_prompt text,
+  updated_at timestamptz default now()
+);
+
+alter table clinics enable row level security;
+alter table agent_config enable row level security;
+
+create policy "Own clinic" on clinics for all using (auth.uid() = user_id);
+create policy "Own config" on agent_config for all using (auth.uid() = user_id);
+```
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Voice Pipeline (Live Demo)
 
-## Learn More
+```
+Browser Mic → MediaRecorder (4s chunks)
+  → /api/stt  →  Sarvam AI (auto language detect)
+  → /api/chat  →  Gemini 1.5 Flash (Priya persona)
+  → /api/tts  →  Cartesia (MP3 bytes)
+  → AudioContext → browser playback
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deploy to Vercel
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push this folder to GitHub
+2. Import in Vercel → add env vars → Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/app/
+├── page.tsx              Landing page
+├── login/ signup/        Auth pages
+├── api/stt chat tts/     Voice pipeline API routes
+└── dashboard/            6 dashboard pages + layout
+```
