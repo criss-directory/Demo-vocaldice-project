@@ -27,11 +27,11 @@ npm install
 The `.env.local` file is already pre-configured. If you need to update keys:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://gqmukyyqiohploxmmytf.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_AP8xIfNEcI7d7xGBa09RfA_pCkY5Gg8
-CARTESIA_API_KEY=sk_car_rFLLnkFm6n7h9jLgLbiECH
-SARVAM_API_KEY=sk_y2nbv7dh_RRZoDZ3SOb0Pc7jEXVbRJ11k
-GEMINI_API_KEY=AIzaSyBZxFHhJgTE14Ag_NIpv3mqUblyLZy0MQQ
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+CARTESIA_API_KEY=your_cartesia_api_key_here
+SARVAM_API_KEY=your_sarvam_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 ### 3. Set up Supabase database
